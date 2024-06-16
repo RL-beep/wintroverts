@@ -1,0 +1,550 @@
+/* Resetting default margin and padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background-color: #f9f6ee;
+    display: flex;
+    flex-direction: column;
+    /* overflow: hidden; */
+}
+
+.header {
+    background-color: #6eba9e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#header-text {
+    font-size: 36px;
+    font-weight: bold;
+    padding-right:11px;
+    padding-left: 11px;
+    padding-top: 10px;
+    font-family: "Manrope Bold", sans-serif;
+}
+
+.nav-link span {
+    font-weight: bold;
+    color: #1A313C;
+}
+
+#header-logo {
+    padding-right: 11px;
+    height: 90%;
+    width: auto;
+}
+
+section {
+    flex: 1;
+    display: flex;
+    flex-flow: column;
+    overflow: hidden;
+    width:100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+}
+
+.nav-tabs {
+    font-family: "Manrope regular", sans-serif;
+    background-color: #212529;
+}
+
+.navigationPanelVenue #peffermillBtn span,
+.navigationPanelVenue #portobelloBtn span,
+.navigationPanelVenue #cornExchangeBtn span
+ {
+    color: whitesmoke;
+}
+
+.navigationPanelVenue .nav-link.active {
+    background-color: #676369 !important;
+    border-radius: 0px;
+    border: none;
+}
+
+
+.all-tab-content {
+    background-color: #F4F4F2;
+    flex: 1;
+    display: flex;
+}
+
+#peffermill-tab-pane,
+#portobello-tab-pane,
+#cornExchange-tab-pane
+{
+    flex: 1;
+}
+
+#peffermillSubTabContent,
+#portobelloSubTabContent,
+#cornExchangeSubTabContent{
+    width:97%;
+    margin-right: auto;
+    margin-left: auto;
+
+}
+
+
+.table-container {
+    overflow-y: scroll; 
+    position: relative; 
+    height: calc(100vh - 430px);
+
+}
+
+
+/* Add styles for the table header */
+.table-container table thead {
+    position: sticky;
+    top: -1px; 
+    background-color: white;
+    z-index: 1;
+}
+
+/* .nav-link.disabled {
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity:0.5;
+} */
+
+#peffermillSubTab,
+#portobelloSubTab,
+#cornExchangeSubTab {
+    background-color: #F4F4F2;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    margin-bottom: 16px;
+    border: none;
+}
+
+#peffermillSubTab .nav-item,
+#portobelloSubTab .nav-item,
+#cornExchangeSubTab .nav-item {
+    margin-right: 10px;
+    border-radius: 50px;
+    /* border: 1px solid red; */
+}
+
+/* Hide buttons that are not table */
+#peffermillSubTab .nav-link:not(#peffermillTableBtn) {
+    display: none;
+}
+
+/* Basic styles for nav-link */
+#peffermillSubTab .nav-link,
+#portobelloSubTab .nav-link,
+#cornExchangeSubTab .nav-link {
+    color: #212529 !important;
+    position: relative;
+    font-weight: bold !important;
+    border: none !important;
+    letter-spacing: 0.7px;
+}
+
+#peffermillSubTab .nav-link.active,
+#portobelloSubTab .nav-link.active,
+#cornExchangeSubTab .nav-link.active {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* Styles for active nav-link to add green bar */
+#peffermillSubTab .nav-link.active::after,
+#portobelloSubTab .nav-link.active::after,
+#cornExchangeSubTab .nav-link.active::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 4px;
+    background-color: #3a7d6b;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+tr {
+    cursor: default;
+}
+
+
+th, td {
+    border: 1px solid #dddddd;
+    vertical-align: middle; /* Vertically center content */
+}
+
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#preloader img {
+    width: 15%;
+}
+
+.new-preloader-style {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.new-preloader-style img {
+    width: 15%;
+}
+
+
+.center-text {
+    text-align: center;
+}
+
+.center-heading {
+    text-align: center;
+
+}
+
+.delete-btn {
+    padding: 0.1rem 0.5rem;
+    font-size: 1rem;
+}
+
+.row-not-available {
+    opacity: 0.5; /* Adjust the opacity value as needed */
+}
+
+td[data-field="Player"] {
+    width: 15%; /* Adjust the percentage width as needed */
+}
+
+td[data-field="Player"] img,
+.lineups-player-image
+ {
+    width: 40.32px;
+    height: auto;
+    margin-right: 10px;
+}
+
+td[data-field="Position"], 
+td[data-field="Apps"], 
+td[data-field="Goals"], 
+td[data-field="AtkRating"],
+td[data-field="DefRating"],
+td[data-field="Available"],
+td[data-field="Delete"]  {
+    width: 5%;
+    max-width: 5%; 
+}
+
+
+.table-parameters{
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+}
+
+#availablePeffermillPlayersCount,
+#availablePortobelloPlayersCount,
+#availableCornExchangePlayersCount {
+    font-size: 16px;
+    font-weight: bold;
+    color: #1A313C;
+    font-family: "Manrope regular", sans-serif;
+}
+
+@keyframes flash {
+  0% { background-color: transparent; }
+  50% { background-color: #00FF00; }
+  100% { background-color: transparent; }
+}
+
+.flash-green {
+  animation: flash 1s infinite;
+}
+
+#generateTeamBtnPeffermill, 
+#addPlayerBtnPeffermill,  
+#incrementAppearancesBtnPeffermill, 
+#decrementAppearancesBtnPeffermill,
+
+#generateTeamBtnPortobello, 
+#addPlayerBtnPortobello,  
+#incrementAppearancesBtnPortobello, 
+#decrementAppearancesBtnPortobello,
+
+#generateTeamBtnCornExchange, 
+#addPlayerBtnCornExchange,  
+#incrementAppearancesBtnCornExchange, 
+#decrementAppearancesBtnCornExchange {
+    font-family: "Manrope regular", sans-serif;
+    color: whitesmoke;
+    background-color: #6eba9e;
+    border: 2px solid #1A313C;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#generateTeamBtnPeffermill:active, 
+#addPlayerBtnPeffermill:active, 
+#incrementAppearancesBtnPeffermill:active, 
+#decrementAppearancesBtnPeffermill:active,
+
+#generateTeamBtnPortobello:active, 
+#addPlayerBtnPortobello:active, 
+#incrementAppearancesBtnPortobello:active, 
+#decrementAppearancesBtnPortobello:active,
+
+#generateTeamBtnCornExchange:active, 
+#addPlayerBtnCornExchange:active, 
+#incrementAppearancesBtnCornExchange:active, 
+#decrementAppearancesBtnCornExchange:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-color: #2a4d4a;
+    transform: translateY(2px);
+}
+
+#generateTeamBtnPeffermill,
+#generateTeamBtnPortobello,
+#generateTeamBtnCornExchange
+ {
+    background-color: #3a7d6b;
+    color: whitesmoke;
+    border: 2px solid #1A313C;
+    font-weight: bold;
+    font-family: "Manrope regular", sans-serif;
+    font-size: 28px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#generateTeamBtnPeffermill:active,
+#generateTeamBtnPortobello:active,
+#generateTeamBtnCornExchange:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-color: #2a4d4a;
+}
+
+.disabled-container-apps {
+    cursor: not-allowed;
+    margin-left: 10px;
+    height: fit-content;
+    margin-top: 16px;
+}
+
+.generate-teams-div{
+    cursor: not-allowed;
+    width: fit-content;
+    margin-bottom: 16px;
+}
+
+.icon-margin {
+    margin-left: 5px;
+}
+
+.rating-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #1A313C;
+    cursor: pointer;
+    border: none;
+}
+
+
+#peffermill-lineups-tab-pane {
+    display: flex;
+    justify-content: space-evenly; 
+    align-items: center;
+    overflow-y: scroll; 
+    position: relative; 
+    height: calc(100vh - 290px);
+}
+
+.lineups-container {
+    margin-bottom: auto;
+}
+
+.lineups-header {
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 0.7px;
+}
+
+.copy-icon {
+    font-size: 32px;
+    cursor: pointer;
+}
+
+.lineups-table th:nth-child(1){
+    text-align: left;
+    width:70%;
+    padding-left: 10px;
+}
+
+.lineups-table td:nth-child(2),
+.lineups-table td:nth-child(3) {
+    text-align: center;
+}
+
+
+footer {
+    font-family: "Manrope Bold", sans-serif;
+}
+
+
+/* Media query for small screens */
+@media (max-width: 576px) {
+    #header-text {
+        font-size: 29px;
+    }
+    .nav-link span {
+        font-size: 13px; /* Adjust size as needed */
+    }
+    th, td {
+        border: 1px solid #dddddd;
+        padding: 3px !important;
+        font-size: 9px;
+    }
+    th {
+        text-align: center;
+    }
+    .rating-select {
+        font-size: 9px;
+    }
+   /* Adjust image width */
+    td[data-field="Player"] img {
+        display: block; /* Make the image a block element */
+        width: 28px;
+        height: auto;
+        margin-bottom: 5px; /* Add margin bottom to create space between the image and text */
+        margin-right: auto;
+        margin-left: auto;
+    }
+    /* Adjust text alignment */
+    td[data-field="Player"] {
+        vertical-align: top; /* Align text to the top */
+        text-align: center;
+    }
+    .delete-btn {
+        padding: 0.10rem 0.2rem;
+        font-size: 0.475rem;
+    }
+    #addPlayerBtnPeffermill, #incrementAppearancesBtnPeffermill, #decrementAppearancesBtnPeffermill,
+    #addPlayerBtnPortobello, #incrementAppearancesBtnPortobello, #decrementAppearancesBtnPortobello,
+    #addPlayerBtnCornExchange, #incrementAppearancesBtnCornExchange, #decrementAppearancesBtnCornExchange {
+        font-size: 10px;
+        padding: 8px 8px;
+      }
+
+    #generateTeamBtnPeffermill,
+    #generateTeamBtnPortobello,
+    #generateTeamBtnCornExchange
+     {
+        font-size: 14px;
+        width:100%;
+        padding: 10px 15px;
+    }
+    #peffermillSubTab,
+    #portobelloSubTab,
+    #cornExchangeSubTab {
+        margin-bottom: 2px;
+    }
+
+    #peffermillSubTab .nav-link,
+    #portobelloSubTab .nav-link,
+    #cornExchangeSubTab .nav-link {
+        font-size: 11px;
+    }
+    .table-container {
+        height: calc(100vh - 404px);
+    }
+    #peffermill-lineups-tab-pane {
+        flex-direction: column;
+    }
+    .lineups-table th {
+        font-size: 13px;
+    }
+    .lineups-table td {
+        font-size: 12px;
+    }
+    .copy-icon {
+        font-size: 32px;
+        margin-top: 20px;
+        margin-bottom: 15px;
+    }
+    .lineups-header {
+        margin-top: 15px;
+    }
+    .lineups-totals {
+        margin-bottom: 15px;
+    }
+
+}
+
+/* Media query for medium screens */
+@media (min-width: 577px) and (max-width: 992px) {
+    #header-text {
+        font-size: 30px;
+    }
+    .nav-link span {
+        font-size: 18px; /* Adjust size as needed */
+    }
+    th, td {
+        border: 1px solid #dddddd;
+        padding: 3px !important;
+        font-size: 12px;
+    }
+    .rating-select {
+        font-size: 12px;
+    }
+
+    .delete-btn {
+        padding: 0.10rem 0.2rem;
+        font-size: 0.475rem;
+    }
+}
+
+/* Media query for large screens */
+@media (min-width: 993px) {
+    #header-text {
+        font-size: 36px;
+    }
+    .nav-link span {
+        font-size: 18px; /* Adjust size as needed */
+    }
+}
