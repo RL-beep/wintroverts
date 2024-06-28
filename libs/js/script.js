@@ -463,36 +463,32 @@ document.getElementById('decrementAppearancesBtnCornExchange').addEventListener(
 //------------------------------------- Lineups TAB Functions --------------------------------------------------------
 
 async function populatePeffermillLineupsTables(players) {
-    // Show the new preloader
+    const teammateAppearancesJson = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/teammate_appearances_counts.json?alt=media');
+    const opponentAppearancesJson = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/opponent_appearances_counts.json?alt=media');
     $('#newPreloader').show();
 
     try {
-        // Clear any existing tables in the lineups div
         $('#peffermill-lineups-tab-pane').empty();
 
-        // Create table headers
-        const headers = ['Player', 'Atk Rating', 'Def Rating'];
+        const headers = ['Player', 'Atk Rating', 'Def Rating', 'Teammate Appearances', 'Opponent Appearances'];
 
-        // Create new tables
         const table1 = $('<table>').addClass('table lineups-table lineups-table-1');
         const table2 = $('<table>').addClass('table lineups-table lineups-table-2');
 
-        // Add table headers
         const thead1 = $('<thead>').append($('<tr>').append(headers.map(header => $('<th>').text(header))));
         const thead2 = $('<thead>').append($('<tr>').append(headers.map(header => $('<th>').text(header))));
 
         table1.append(thead1);
         table2.append(thead2);
 
-        // Create table bodies
-        const tbody1 = $('<tbody>');
-        const tbody2 = $('<tbody>');
+        const tbody1 = $('<tbody>').addClass('lineups-tbody');
+        const tbody2 = $('<tbody>').addClass('lineups-tbody');
 
-        // Initialize totals
         let totalAtk1 = 0, totalDef1 = 0;
         let totalAtk2 = 0, totalDef2 = 0;
+        let totalTeammateAppearances1 = 0, totalOpponentAppearances1 = 0;
+        let totalTeammateAppearances2 = 0, totalOpponentAppearances2 = 0;
 
-        // Filter all players by those that are available
         const availablePlayers = Object.entries(players)
             .filter(([_, player]) => player.Available)
             .map(([playerName, playerData]) => {
@@ -502,28 +498,21 @@ async function populatePeffermillLineupsTables(players) {
                 };
             });
 
-        // Check if the minimum number of available players is met
         if (availablePlayers.length <= 16) {
             alert("Must have a minimum of 17 available players");
 
-            // Hide the lineups tab
             $('#peffermillLineupsBtn').hide();
-
-            // Hide the new preloader
             $('#newPreloader').fadeOut('slow');
 
             return;
         }
 
-        // Get team assignments
         const unique_match_list = findTeamsHeuristicFunction(availablePlayers);
         const { teamA, teamB } = await generateBalancedTeams(unique_match_list, availablePlayers);
 
-        // Now you have teamA and teamB which are the finalized teams
-        console.log("Team A (Final):", teamA);
-        console.log("Team B (Final):", teamB);
+        console.log("Lightside: ", teamA);
+        console.log("Darkside: ", teamB);
 
-        // Helper function to create a table row
         function createRow(player) {
             const img = $('<img>').attr('src', player.playerData.playerImage).addClass('lineups-player-image');
             const playerNameSpan = $('<span>').text(player.playerName);
@@ -531,105 +520,256 @@ async function populatePeffermillLineupsTables(players) {
 
             const atkRating = Number(player.playerData.AtkRating);
             const defRating = Number(player.playerData.DefRating);
+            const teammateAppearances = player.playerData.teammates.totalTeammateAppearances;
+            const opponentAppearances = player.playerData.opponents.totalOpponentAppearances;
 
             return $('<tr>').append(
                 playerCell,
                 $('<td>').text(atkRating),
-                $('<td>').text(defRating)
-            );
+                $('<td>').text(defRating),
+                $('<td>').text(teammateAppearances),
+                $('<td>').text(opponentAppearances)
+            ).data('playerData', player.playerData).data('playerName', player.playerName);
         }
 
-        // Populate tables and calculate totals for team A
         teamA.forEach(player => {
             const row = createRow(player);
             tbody1.append(row);
             totalAtk1 += Number(player.playerData.AtkRating);
             totalDef1 += Number(player.playerData.DefRating);
+            totalTeammateAppearances1 += player.playerData.teammates.totalTeammateAppearances;
+            totalOpponentAppearances1 += player.playerData.opponents.totalOpponentAppearances;
         });
 
-        // Populate tables and calculate totals for team B
         teamB.forEach(player => {
             const row = createRow(player);
             tbody2.append(row);
             totalAtk2 += Number(player.playerData.AtkRating);
             totalDef2 += Number(player.playerData.DefRating);
+            totalTeammateAppearances2 += player.playerData.teammates.totalTeammateAppearances;
+            totalOpponentAppearances2 += player.playerData.opponents.totalOpponentAppearances;
         });
 
-        // Append table bodies to tables
         table1.append(tbody1);
         table2.append(tbody2);
 
-        // Create containers for tables, headers, and totals
         const container1 = $('<div>').addClass('lineups-container');
         const container2 = $('<div>').addClass('lineups-container');
 
-        // Create headers
         const header1 = $('<h3>').text('Lightside').addClass('lineups-header');
         const header2 = $('<h3>').text('Darkside').addClass('lineups-header');
 
-        // Create totals
-        const totals1 = $('<div>').addClass('lineups-totals').html(`<b>Attack Rating:</b> ${totalAtk1}<br><b>Defence Rating:</b> ${totalDef1}`);
-        const totals2 = $('<div>').addClass('lineups-totals').html(`<b>Attack Rating:</b> ${totalAtk2}<br><b>Defence Rating:</b> ${totalDef2}`);
+        const totals1 = $('<div>').addClass('lineups-totals').html(
+            `<b>Attack Rating:</b> ${totalAtk1}<br>
+            <b>Defence Rating:</b> ${totalDef1}<br>
+            <b>Total Teammate Appearances:</b> ${totalTeammateAppearances1}<br>
+            <b>Total Opponent Appearances:</b> ${totalOpponentAppearances1}`
+        );
+        const totals2 = $('<div>').addClass('lineups-totals').html(
+            `<b>Attack Rating:</b> ${totalAtk2}<br>
+            <b>Defence Rating:</b> ${totalDef2}<br>
+            <b>Total Teammate Appearances:</b> ${totalTeammateAppearances2}<br>
+            <b>Total Opponent Appearances:</b> ${totalOpponentAppearances2}`
+        );
 
-        // Append headers, tables, and totals to containers
         container1.append(header1, table1, totals1);
         container2.append(header2, table2, totals2);
 
-        // Create the copy icon
         const copyIcon = $('<i>').addClass('fas fa-copy copy-icon');
 
-        // Event listener for the copy icon click
         copyIcon.on('click', function() {
             copyPlayerNamesToClipboard();
         });
 
-        // Append containers and copy icon to the lineups div
         const lineupsDiv = $('#peffermill-lineups-tab-pane');
         lineupsDiv.append(container1, copyIcon, container2);
+
+        function recalculateTotals() {
+            let totalAtk1 = 0, totalDef1 = 0;
+            let totalAtk2 = 0, totalDef2 = 0;
+            let totalTeammateAppearances1 = 0, totalOpponentAppearances1 = 0;
+            let totalTeammateAppearances2 = 0, totalOpponentAppearances2 = 0;
+
+            const teamAPlayers = [];
+            const teamBPlayers = [];
+
+            tbody1.find('tr').each(function() {
+                const playerData = $(this).data('playerData');
+                const playerName = $(this).data('playerName');
+                teamAPlayers.push(playerName);
+
+                totalAtk1 += Number(playerData.AtkRating);
+                totalDef1 += Number(playerData.DefRating);
+            });
+
+            tbody2.find('tr').each(function() {
+                const playerData = $(this).data('playerData');
+                const playerName = $(this).data('playerName');
+                teamBPlayers.push(playerName);
+
+                totalAtk2 += Number(playerData.AtkRating);
+                totalDef2 += Number(playerData.DefRating);
+            });
+
+            const teamAAppearances = calculateTeammateAppearances(teamAPlayers, teammateAppearancesJson);
+            const teamBAppearances = calculateTeammateAppearances(teamBPlayers, teammateAppearancesJson);
+
+            const teamAOpponentAppearances = calculateOpponentTeammateAppearances(teamAPlayers, teamBPlayers, opponentAppearancesJson);
+            const teamBOpponentAppearances = calculateOpponentTeammateAppearances(teamBPlayers, teamAPlayers, opponentAppearancesJson);
+
+            tbody1.find('tr').each(function() {
+                const playerName = $(this).data('playerName');
+                const playerData = $(this).data('playerData');
+
+                const updatedPlayerData = {
+                    ...playerData,
+                    teammates: teamAAppearances[playerName],
+                    opponents: teamAOpponentAppearances[playerName]
+                };
+
+                $(this).data('playerData', updatedPlayerData);
+
+                totalTeammateAppearances1 += updatedPlayerData.teammates.totalTeammateAppearances;
+                totalOpponentAppearances1 += updatedPlayerData.opponents.totalOpponentAppearances;
+
+                $(this).find('td').eq(3).text(updatedPlayerData.teammates.totalTeammateAppearances);
+                $(this).find('td').eq(4).text(updatedPlayerData.opponents.totalOpponentAppearances);
+            });
+
+            tbody2.find('tr').each(function() {
+                const playerName = $(this).data('playerName');
+                const playerData = $(this).data('playerData');
+
+                const updatedPlayerData = {
+                    ...playerData,
+                    teammates: teamBAppearances[playerName],
+                    opponents: teamBOpponentAppearances[playerName]
+                };
+
+                $(this).data('playerData', updatedPlayerData);
+
+                totalTeammateAppearances2 += updatedPlayerData.teammates.totalTeammateAppearances;
+                totalOpponentAppearances2 += updatedPlayerData.opponents.totalOpponentAppearances;
+
+                $(this).find('td').eq(3).text(updatedPlayerData.teammates.totalTeammateAppearances);
+                $(this).find('td').eq(4).text(updatedPlayerData.opponents.totalOpponentAppearances);
+            });
+
+            totals1.html(
+                `<b>Attack Rating:</b> ${totalAtk1}<br>
+                <b>Defence Rating:</b> ${totalDef1}<br>
+                <b>Total Teammate Appearances:</b> ${totalTeammateAppearances1}<br>
+                <b>Total Opponent Appearances:</b> ${totalOpponentAppearances1}`
+            );
+            totals2.html(
+                `<b>Attack Rating:</b> ${totalAtk2}<br>
+                <b>Defence Rating:</b> ${totalDef2}<br>
+                <b>Total Teammate Appearances:</b> ${totalTeammateAppearances2}<br>
+                <b>Total Opponent Appearances:</b> ${totalOpponentAppearances2}`
+            );
+        }
+
+        $('.lineups-tbody').sortable({
+            connectWith: '.lineups-tbody',
+            placeholder: 'ui-state-highlight',
+            update: function(event, ui) {
+                recalculateTotals();
+            }
+        }).disableSelection();
 
     } catch (error) {
         console.error('Error populating lineups:', error);
     } finally {
-        // Hide the new preloader once the function completes
         $('#newPreloader').fadeOut('slow');
 
-        // Show the lineups tab
         $('#peffermillLineupsBtn').show();
-        $('#peffermillLineupsBtn').tab('show'); // Activate the lineups tab
+        $('#peffermillLineupsBtn').tab('show');
     }
 }
 
-// Function to copy player names to clipboard
+// Function to copy player names, ratings, and appearances to clipboard
 function copyPlayerNamesToClipboard() {
-    let counter = 0; // Initialize a counter variable
+    // Initialize arrays to store player data
+    let table1Players = [];
+    let table2Players = [];
 
-    // Get the player names from table 1
-    const table1Names = $('.lineups-table-1 td:first-child span').map(function() {
-        counter++; // Increment the counter
-        return counter + ". " + $(this).text(); // Add the number before each player name
-    }).get();
+    // Get the player data from table 1
+    $('.lineups-table-1 tbody tr').each(function(index) {
+        let playerName = $(this).data('playerName');
+        let atkRating = $(this).find('td:nth-child(2)').text();
+        let defRating = $(this).find('td:nth-child(3)').text();
+        let teammateAppearances = $(this).find('td:nth-child(4)').text();
+        let opponentAppearances = $(this).find('td:nth-child(5)').text();
 
-    // Get the player names from table 2
-    const table2Names = $('.lineups-table-2 td:first-child span').map(function() {
-        counter++; // Increment the counter
-        return counter + ". " + $(this).text(); // Add the number before each player name
-    }).get();
+        table1Players.push({
+            number: index + 1,
+            playerName: playerName,
+            atkRating: atkRating,
+            defRating: defRating,
+            teammateAppearances: teammateAppearances,
+            opponentAppearances: opponentAppearances
+        });
+    });
 
-    // Combine the player names from both tables
-    const allPlayerNames = [...table1Names, ...table2Names];
+    // Get the player data from table 2
+    $('.lineups-table-2 tbody tr').each(function(index) {
+        let playerName = $(this).data('playerName');
+        let atkRating = $(this).find('td:nth-child(2)').text();
+        let defRating = $(this).find('td:nth-child(3)').text();
+        let teammateAppearances = $(this).find('td:nth-child(4)').text();
+        let opponentAppearances = $(this).find('td:nth-child(5)').text();
 
-    // Prepend "LIGHTSIDE" text before the players from table 1
-    const table1WithSide = ["--LIGHTSIDE--", ...table1Names];
-    
-    // Prepend "DARKSIDE" text before the players from table 2
-    const table2WithSide = ["--DARKSIDE--", ...table2Names];
+        table2Players.push({
+            number: index + 1,
+            playerName: playerName,
+            atkRating: atkRating,
+            defRating: defRating,
+            teammateAppearances: teammateAppearances,
+            opponentAppearances: opponentAppearances
+        });
+    });
 
-    // Combine the player names with the side texts
-    const allPlayerNamesWithSide = [...table1WithSide, ...table2WithSide];
+    // Combine player data with side labels
+    let allPlayerData = [
+        { side: '--LIGHTSIDE--', players: table1Players },
+        { side: '--DARKSIDE--', players: table2Players }
+    ];
+
+    // Create the text content for copying
+    let textContent = '';
+    allPlayerData.forEach(sideData => {
+        textContent += sideData.side + '\n';
+        textContent += 'Number | Player Name      | Attack | Defence | Teammates | Opponents\n'; // Header row
+        sideData.players.forEach(player => {
+            // Format each player's data with | delimiter and aligned columns
+            textContent += `${pad(player.number, 6)} | ${pad(player.playerName, 16)} | ${pad(player.atkRating, 7)} | ${pad(player.defRating, 8)} | ${pad(player.teammateAppearances, 10)} | ${pad(player.opponentAppearances, 9)}\n`;
+        });
+    });
+
+    // Calculate totals for each table
+    let totalAtk1 = 0, totalDef1 = 0, totalTeammateAppearances1 = 0, totalOpponentAppearances1 = 0;
+    let totalAtk2 = 0, totalDef2 = 0, totalTeammateAppearances2 = 0, totalOpponentAppearances2 = 0;
+
+    table1Players.forEach(player => {
+        totalAtk1 += parseInt(player.atkRating);
+        totalDef1 += parseInt(player.defRating);
+        totalTeammateAppearances1 += parseInt(player.teammateAppearances);
+        totalOpponentAppearances1 += parseInt(player.opponentAppearances);
+    });
+
+    table2Players.forEach(player => {
+        totalAtk2 += parseInt(player.atkRating);
+        totalDef2 += parseInt(player.defRating);
+        totalTeammateAppearances2 += parseInt(player.teammateAppearances);
+        totalOpponentAppearances2 += parseInt(player.opponentAppearances);
+    });
+
+    textContent += `\n--LIGHTSIDE--\nTotal Attack Rating: ${totalAtk1} | Total Defence Rating: ${totalDef1} | Total Teammate Appearances: ${totalTeammateAppearances1} | Total Opponent Appearances: ${totalOpponentAppearances1}\n`;
+    textContent += `--DARKSIDE--\nTotal Attack Rating: ${totalAtk2} | Total Defence Rating: ${totalDef2} | Total Teammate Appearances: ${totalTeammateAppearances2} | Total Opponent Appearances: ${totalOpponentAppearances2}\n`;
 
     // Create a textarea element to hold the text to copy
     const textarea = document.createElement('textarea');
-    textarea.value = allPlayerNamesWithSide.join('\n'); // Separate names with newline character
+    textarea.value = textContent.trim(); // Remove trailing whitespace
 
     // Append the textarea to the document body
     document.body.appendChild(textarea);
@@ -647,6 +787,11 @@ function copyPlayerNamesToClipboard() {
     alert('Teams copied to clipboard!');
 }
 
+// Function to pad strings for alignment
+function pad(str, width, padChar = ' ') {
+    str = str.toString();
+    return str + padChar.repeat(Math.max(0, width - str.length));
+}
 //------------------------------------- Generating Team Functions -----------------------------------------------------
 
 
@@ -822,12 +967,13 @@ async function fetchJSONFromFirebase(filePath) {
 }
 
 async function generateBalancedTeams(unique_match_list, players) {
-    const teammateAppearances = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/teammate_appearances_counts.json?alt=media');
-    const opponentAppearances = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/opponent_appearances_counts.json?alt=media');
+    const teammateAppearancesJson = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/teammate_appearances_counts.json?alt=media');
+    const opponentAppearancesJson = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/opponent_appearances_counts.json?alt=media');
 
     let team_rating_dict = {};
     let player_rating_dict = {};
 
+    // Build player rating dictionary
     players.forEach(player => {
         player_rating_dict[player.playerName] = {
             'Defending': parseInt(player.playerData.DefRating),
@@ -835,6 +981,7 @@ async function generateBalancedTeams(unique_match_list, players) {
         };
     });
 
+    // Calculate team ratings for each match
     unique_match_list.forEach(pair_of_teams => {
         let team_1 = pair_of_teams[0].map(player => player.playerName);
         let team_2 = pair_of_teams[1].map(player => player.playerName);
@@ -846,38 +993,36 @@ async function generateBalancedTeams(unique_match_list, players) {
         team_rating_dict[team_2.join(",")] = team_2_ratings;
     });
 
+    // Calculate match balances
     let match_balances = unique_match_list.map(pair_of_teams => {
-        let teamA = pair_of_teams[0].map(player => player.playerName);
-        let teamB = pair_of_teams[1].map(player => player.playerName);
+        let teamA = pair_of_teams[0].map(player => ({
+            playerName: player.playerName,
+            playerData: {
+                ...player.playerData,
+                teammates: calculateTeammateAppearances(pair_of_teams[0].map(p => p.playerName), teammateAppearancesJson)[player.playerName],
+                opponents: calculateOpponentTeammateAppearances(pair_of_teams[0].map(p => p.playerName), pair_of_teams[1].map(p => p.playerName), opponentAppearancesJson)[player.playerName]
+            }
+        }));
+        let teamB = pair_of_teams[1].map(player => ({
+            playerName: player.playerName,
+            playerData: {
+                ...player.playerData,
+                teammates: calculateTeammateAppearances(pair_of_teams[1].map(p => p.playerName), teammateAppearancesJson)[player.playerName],
+                opponents: calculateOpponentTeammateAppearances(pair_of_teams[1].map(p => p.playerName), pair_of_teams[0].map(p => p.playerName), opponentAppearancesJson)[player.playerName]
+            }
+        }));
 
-        let balance = calculateMatchBalance([teamA, teamB], team_rating_dict);
-
-        let teammateAppearancesTeamA = calculatePlayerAppearances(teamA, teammateAppearances);
-        let teammateAppearancesTeamB = calculatePlayerAppearances(teamB, teammateAppearances);
-        let opponentAppearancesTeamA = calculatePlayerAppearances(teamA, opponentAppearances);
-        let opponentAppearancesTeamB = calculatePlayerAppearances(teamB, opponentAppearances);
-
-        let totalTeammateAppearancesTeamA = calculateTotalTeammateAppearances(teammateAppearancesTeamA);
-        let totalTeammateAppearancesTeamB = calculateTotalTeammateAppearances(teammateAppearancesTeamB);
-
-        let totalOpponentAppearancesTeamA = calculateTotalOpponentAppearances(opponentAppearancesTeamA);
-        let totalOpponentAppearancesTeamB = calculateTotalOpponentAppearances(opponentAppearancesTeamB);
+        let balance = calculateMatchBalance([teamA.map(player => player.playerName), teamB.map(player => player.playerName)], team_rating_dict);
 
         return {
-            teams: pair_of_teams,
+            teams: [teamA, teamB],
             balance: balance,
-            teammateAppearancesTeamA: teammateAppearancesTeamA,
-            teammateAppearancesTeamB: teammateAppearancesTeamB,
-            opponentAppearancesTeamA: opponentAppearancesTeamA,
-            opponentAppearancesTeamB: opponentAppearancesTeamB,
-            totalTeammateAppearancesTeamA: totalTeammateAppearancesTeamA,
-            totalTeammateAppearancesTeamB: totalTeammateAppearancesTeamB,
-            totalOpponentAppearancesTeamA: totalOpponentAppearancesTeamA,
-            totalOpponentAppearancesTeamB: totalOpponentAppearancesTeamB
+            totalTeammateAppearancesTeamA: calculateTotalTeammateAppearances(teamA),
+            totalTeammateAppearancesTeamB: calculateTotalTeammateAppearances(teamB),
+            totalOpponentAppearancesTeamA: calculateTotalOpponentAppearances(teamA),
+            totalOpponentAppearancesTeamB: calculateTotalOpponentAppearances(teamB)
         };
     });
-
-    console.log("All Matches", match_balances);
 
     // Find the minimum balance score
     let min_balance = Math.min(...match_balances.map(match => match.balance));
@@ -885,79 +1030,126 @@ async function generateBalancedTeams(unique_match_list, players) {
     // Filter matches to include only those with the minimum balance score
     let balanced_matches = match_balances.filter(match => match.balance === min_balance);
 
-    // Custom sort function based on the provided criteria
-    function customMatchSort(a, b) {
-        const aValue = (a.balance, (a.totalTeammateAppearancesTeamA + a.totalTeammateAppearancesTeamB)**2 + (a.totalOpponentAppearancesTeamA + a.totalOpponentAppearancesTeamB)**2, a.totalTeammateAppearancesTeamA + a.totalTeammateAppearancesTeamB, a.totalOpponentAppearancesTeamA + a.totalOpponentAppearancesTeamB);
-        const bValue = (b.balance, (b.totalTeammateAppearancesTeamA + b.totalTeammateAppearancesTeamB)**2 + (b.totalOpponentAppearancesTeamA + b.totalOpponentAppearancesTeamB)**2, b.totalTeammateAppearancesTeamA + b.totalTeammateAppearancesTeamB, b.totalOpponentAppearancesTeamA + b.totalOpponentAppearancesTeamB);
+   // Custom sort function based on the provided criteria
+   function customMatchSort(a, b) {
+    const aValue = [
+        a.balance,
+        (a.totalTeammateAppearancesTeamA + a.totalTeammateAppearancesTeamB)**2 + (a.totalOpponentAppearancesTeamA + a.totalOpponentAppearancesTeamB)**2,
+        a.totalTeammateAppearancesTeamA + a.totalTeammateAppearancesTeamB,
+        a.totalOpponentAppearancesTeamA + a.totalOpponentAppearancesTeamB
+    ];
+    const bValue = [
+        b.balance,
+        (b.totalTeammateAppearancesTeamA + b.totalTeammateAppearancesTeamB)**2 + (b.totalOpponentAppearancesTeamA + b.totalOpponentAppearancesTeamB)**2,
+        b.totalTeammateAppearancesTeamA + b.totalTeammateAppearancesTeamB,
+        b.totalOpponentAppearancesTeamA + b.totalOpponentAppearancesTeamB
+    ];
 
-        for (let i = 0; i < aValue.length; i++) {
-            if (aValue[i] < bValue[i]) return -1;
-            if (aValue[i] > bValue[i]) return 1;
-        }
-        return 0;
+    for (let i = 0; i < aValue.length; i++) {
+        if (aValue[i] < bValue[i]) return -1;
+        if (aValue[i] > bValue[i]) return 1;
+    }
+    return 0;
     }
 
     // Sort the balanced matches
     balanced_matches.sort(customMatchSort);
 
-    // When generating teams, randomly pick between the first (up to) 50 best results
-    const randomIndex = Math.floor(Math.random() * Math.min(balanced_matches.length, 50));
+    // When generating teams, randomly pick between the first (up to) 10 best results
+    const randomIndex = Math.floor(Math.random() * Math.min(balanced_matches.length, 10));
 
-    console.log(randomIndex)
+    console.log("team picked is no: ",randomIndex)
 
     console.log("Balanced Matches with best (lowest) balance:", balanced_matches);
 
     return { teamA: balanced_matches[randomIndex]?.teams[0] || [], teamB: balanced_matches[randomIndex]?.teams[1] || [] };
-}
+} 
 
-function calculatePlayerAppearances(team, appearancesData) {
+function calculateTeammateAppearances(team, appearancesData) {
     let appearances = {};
+    
+    // Initialize appearances object for each player in the team for appearances
     team.forEach(player => {
         appearances[player] = {
             totalTeammateAppearances: 0,
-            totalOpponentAppearances: 0,
-            teammates: {},
-            opponents: {}
+            teammates: {}
         };
     });
 
+    // Calculate teammate appearances within the same team
     for (let i = 0; i < team.length; i++) {
         for (let j = i + 1; j < team.length; j++) {
-            let pair = team[i] + "+" + team[j];
-            if (appearancesData[pair]) {
-                appearances[team[i]].totalTeammateAppearances += appearancesData[pair];
-                appearances[team[j]].totalTeammateAppearances += appearancesData[pair];
-                appearances[team[i]].teammates[team[j]] = appearancesData[pair];
-                appearances[team[j]].teammates[team[i]] = appearancesData[pair];
+            let pair1 = team[i] + "+" + team[j];
+            let pair2 = team[j] + "+" + team[i];
+
+            // Check if pair1 exists in appearancesData
+            if (appearancesData[pair1]) {
+                appearances[team[i]].totalTeammateAppearances += appearancesData[pair1];
+                appearances[team[j]].totalTeammateAppearances += appearancesData[pair1];
+                appearances[team[i]].teammates[team[j]] = appearancesData[pair1];
+                appearances[team[j]].teammates[team[i]] = appearancesData[pair1];
+            }
+
+            // Check if pair2 exists in appearancesData (handle case where player comes after +)
+            if (appearancesData[pair2]) {
+                appearances[team[j]].totalTeammateAppearances += appearancesData[pair2];
+                appearances[team[i]].totalTeammateAppearances += appearancesData[pair2];
+                appearances[team[j]].teammates[team[i]] = appearancesData[pair2];
+                appearances[team[i]].teammates[team[j]] = appearancesData[pair2];
             }
         }
     }
 
-    team.forEach(player => {
-        Object.keys(appearancesData).forEach(pair => {
-            if (pair.includes(player)) {
-                let opponent = pair.split('+').filter(p => p !== player)[0];
-                if (!team.includes(opponent)) {
-                    appearances[player].totalOpponentAppearances += appearancesData[pair];
-                    appearances[player].opponents[opponent] = appearancesData[pair];
-                }
+    return appearances;
+}
+
+// Function to calculate opponent appearances for a player
+function calculateOpponentTeammateAppearances(teamA, teamB, appearancesData) {
+    let opponentAppearances = {};
+
+    // Initialize opponentAppearances object for each player in teamA
+    teamA.forEach(playerA => {
+        opponentAppearances[playerA] = {
+            totalOpponentAppearances: 0,
+            opponents: {}
+        };
+
+        // Initialize opponents object for each playerA to store appearances with players in teamB
+        teamB.forEach(opponent => {
+            opponentAppearances[playerA].opponents[opponent] = 0; // Initialize to 0 or leave empty if no data available initially
+        });
+    });
+
+    // Calculate opponent teammate appearances between teamA and teamB
+    teamA.forEach(playerA => {
+        teamB.forEach(opponent => {
+            let pair1 = playerA + "+" + opponent;
+            let pair2 = opponent + "+" + playerA;
+
+            // Check if pair1 or pair2 exists in appearancesData
+            if (appearancesData[pair1]) {
+                opponentAppearances[playerA].totalOpponentAppearances += appearancesData[pair1];
+                opponentAppearances[playerA].opponents[opponent] += appearancesData[pair1];
+            }
+            if (appearancesData[pair2]) {
+                opponentAppearances[playerA].totalOpponentAppearances += appearancesData[pair2];
+                opponentAppearances[playerA].opponents[opponent] += appearancesData[pair2];
             }
         });
     });
 
-    return appearances;
+    return opponentAppearances;
 }
 
-function calculateTotalTeammateAppearances(appearances) {
-    return Object.values(appearances).reduce((total, player) => {
-        return total + player.totalTeammateAppearances;
-    }, 0);
+
+// Helper function to calculate total teammate appearances
+function calculateTotalTeammateAppearances(team) {
+    return team.reduce((total, player) => total + player.playerData.teammates.totalTeammateAppearances, 0);
 }
 
-function calculateTotalOpponentAppearances(appearances) {
-    return Object.values(appearances).reduce((total, player) => {
-        return total + player.totalOpponentAppearances;
-    }, 0);
+// Helper function to calculate total opponent appearances
+function calculateTotalOpponentAppearances(team) {
+    return team.reduce((total, player) => total + player.playerData.opponents.totalOpponentAppearances, 0);
 }
 
 function calculateNetDifference(rating1, rating2) {

@@ -384,7 +384,49 @@ td[data-field="Delete"]  {
     border: none;
 }
 
+.ui-state-highlight {
+    height: 1.5em;
+    line-height: 1.2em;
+    background-color: #ffffcc;
+    border: 1px dashed #999999;
+}
 
+.lineups-tbody tr {
+    cursor: grab;
+}
+
+.lineups-tbody tr:active {
+    cursor: grabbing;
+}
+
+.lineups-table {
+    font-size: 14px;
+    width: auto; /* Allow the table to adjust its width based on content */
+    table-layout: auto; /* Make table layout auto */
+}
+
+/* Align the first column to the left and reduce padding */
+.lineups-table th:nth-child(1),
+.lineups-table td:nth-child(1) {
+    text-align: left;
+    padding-left: 10px;
+}
+
+/* Center-align the remaining columns and set specific widths */
+.lineups-table th:nth-child(2),
+.lineups-table td:nth-child(2),
+.lineups-table th:nth-child(3),
+.lineups-table td:nth-child(3),
+.lineups-table th:nth-child(4),
+.lineups-table td:nth-child(4),
+.lineups-table th:nth-child(5),
+.lineups-table td:nth-child(5) {
+    text-align: center;
+    width: 80px; /* Adjust the width as needed */
+    padding: 5px; /* Reduce padding to make columns narrower */
+}
+
+/* Container for the tables and copy icon */
 #peffermill-lineups-tab-pane {
     display: flex;
     justify-content: space-evenly; 
@@ -392,12 +434,16 @@ td[data-field="Delete"]  {
     overflow-y: scroll; 
     position: relative; 
     height: calc(100vh - 290px);
+    margin-top: 10px;
 }
 
+/* Container for individual tables */
 .lineups-container {
     margin-bottom: auto;
+    width: auto; /* Allow container to adjust its width based on table content */
 }
 
+/* Header styling */
 .lineups-header {
     margin-bottom: 20px;
     text-align: center;
@@ -405,20 +451,11 @@ td[data-field="Delete"]  {
     letter-spacing: 0.7px;
 }
 
+/* Copy icon styling */
 .copy-icon {
     font-size: 32px;
     cursor: pointer;
-}
-
-.lineups-table th:nth-child(1){
-    text-align: left;
-    width:70%;
-    padding-left: 10px;
-}
-
-.lineups-table td:nth-child(2),
-.lineups-table td:nth-child(3) {
-    text-align: center;
+    margin: 0 10px; /* Add some margin to center it better */
 }
 
 
@@ -446,20 +483,7 @@ footer {
     .rating-select {
         font-size: 9px;
     }
-   /* Adjust image width */
-    td[data-field="Player"] img {
-        display: block; /* Make the image a block element */
-        width: 28px;
-        height: auto;
-        margin-bottom: 5px; /* Add margin bottom to create space between the image and text */
-        margin-right: auto;
-        margin-left: auto;
-    }
-    /* Adjust text alignment */
-    td[data-field="Player"] {
-        vertical-align: top; /* Align text to the top */
-        text-align: center;
-    }
+
     .delete-btn {
         padding: 0.10rem 0.2rem;
         font-size: 0.475rem;
@@ -496,12 +520,28 @@ footer {
     #peffermill-lineups-tab-pane {
         flex-direction: column;
     }
-    .lineups-table th {
-        font-size: 13px;
+    .lineups-table {
+        width:98%;
+        margin: 0 auto;
     }
-    .lineups-table td {
+
+    td[data-field="Player"] img,
+    .lineups-player-image
+    {
+        display: block;
+        margin: 0 auto;
+        padding:0 5px;
+    };
+    .lineups-table th {
         font-size: 12px;
     }
+    .lineups-table th:nth-child(1),
+    .lineups-table td:nth-child(1),
+    th:nth-child(1),
+    td:nth-child(1) {
+        text-align: center;
+    };
+
     .copy-icon {
         font-size: 32px;
         margin-top: 20px;
@@ -511,7 +551,8 @@ footer {
         margin-top: 15px;
     }
     .lineups-totals {
-        margin-bottom: 15px;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
 
 }
