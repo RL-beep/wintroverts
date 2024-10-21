@@ -731,20 +731,21 @@ function copyPlayerNamesToClipboard() {
 
     // Combine player data with side labels
     let allPlayerData = [
-        { side: '--LIGHTSIDE--', players: table1Players },
-        { side: '--DARKSIDE--', players: table2Players }
+        { side: '--LIGHTSIDE--\n', players: table1Players },
+        { side: '--DARKSIDE--\n', players: table2Players }
     ];
 
     // Create the text content for copying
     let textContent = '';
     allPlayerData.forEach(sideData => {
         textContent += sideData.side + '\n';
-        textContent += 'Number | Player Name      | Attack | Defence | Teammates | Opponents\n'; // Header row
         sideData.players.forEach(player => {
-            // Format each player's data with | delimiter and aligned columns
-            textContent += `${pad(player.number, 6)} | ${pad(player.playerName, 16)} | ${pad(player.atkRating, 7)} | ${pad(player.defRating, 8)} | ${pad(player.teammateAppearances, 10)} | ${pad(player.opponentAppearances, 9)}\n`;
+            textContent += `${player.number}. @${player.playerName}\n`;
+            textContent += `Atk: ${player.atkRating}, Def: ${player.defRating}, Team Opps: ${player.teammateAppearances}, Opp Opps: ${player.opponentAppearances}\n`;
+            textContent += '-----------------------\n'; // Separator for players
         });
     });
+    
 
     // Calculate totals for each table
     let totalAtk1 = 0, totalDef1 = 0, totalTeammateAppearances1 = 0, totalOpponentAppearances1 = 0;
