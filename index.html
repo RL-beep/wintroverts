@@ -44,17 +44,17 @@
         <ul class="nav nav-tabs" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" id="peffermillBtn" data-bs-toggle="tab" data-bs-target="#peffermill-tab-pane" type="button" role="tab" aria-controls="peffermill-tab-pane" aria-selected="true">
-              <span class=>Peffermill</span>
+              <span class=>11's Ratings</span>
             </button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="portobelloBtn" data-bs-toggle="tab" data-bs-target="#portobello-tab-pane" type="button" role="tab" aria-controls="portobello-tab-pane" aria-selected="false">
-              <span>Portobello</span>
+              <span>7's Ratings</span>
             </button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="cornExchangeBtn" data-bs-toggle="tab" data-bs-target="#cornExchange-tab-pane" type="button" role="tab" aria-controls="cornExchange-tab-pane" aria-selected="false">
-              <span>Corn Exchange</span>
+              <span>5's Ratings</span>
             </button>
           </li>
         </ul>
@@ -64,6 +64,7 @@
 
         <!-- Peffermill Tab -->
         <div class="tab-pane show active position-relative" id="peffermill-tab-pane" role="tabpanel" aria-labelledby="peffermillBtn" tabindex="0">
+
           <ul class="nav nav-tabs" id="peffermillSubTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="peffermillTableBtn" data-bs-toggle="tab" data-bs-target="#peffermill-table-tab-pane" type="button" role="tab" aria-controls="peffermill-table-tab-pane" aria-selected="true">Table</button>
@@ -71,12 +72,6 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="peffermillLineupsBtn" data-bs-toggle="tab" data-bs-target="#peffermill-lineups-tab-pane" type="button" role="tab" aria-controls="peffermill-lineups-tab-pane" aria-selected="false">Lineups</button>
             </li>
-            <!-- <li class="nav-item" role="presentation">
-                <button class="nav-link" id="peffermillTeamAppearancesBtn" data-bs-toggle="tab" data-bs-target="#peffermill-team-appearances-tab-pane" type="button" role="tab" aria-controls="peffermill-team-appearances-tab-pane" aria-selected="false">Team Appearances</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="peffermillOpponentAppearancesBtn" data-bs-toggle="tab" data-bs-target="#peffermill-opponent-appearances-tab-pane" type="button" role="tab" aria-controls="peffermill-opponent-appearances-tab-pane" aria-selected="false">Opponent Appearances</button>
-            </li> -->
         </ul>
 
           <div class="tab-content" id="peffermillSubTabContent">
@@ -114,30 +109,24 @@
             </div>
             </div>
 
+            <div class="tab-pane position-relative" id="peffermill-lineups-tab-pane" role="tabpanel" aria-labelledby="peffermillLineupsBtn" tabindex="0"></div>
 
-            <div class="tab-pane position-relative" id="peffermill-lineups-tab-pane" role="tabpanel" aria-labelledby="peffermillLineupsBtn" tabindex="0">
-              <!-- Toggle button to show/hide ratings columns -->
-              <button id="toggle-ratings" class="btn btn-primary">Toggle Ratings</button>
-              <!-- Content for Lineups populated in JavaScript -->
           </div>
-            <!-- <div class="tab-pane position-relative" id="peffermill-team-appearances-tab-pane" role="tabpanel" aria-labelledby="peffermillTeamAppearancesBtn" tabindex="0">
-
-            </div>
-            <div class="tab-pane position-relative" id="peffermill-opponent-appearances-tab-pane" role="tabpanel" aria-labelledby="peffermillOpponentAppearancesBtn" tabindex="0">
-              
-            </div> -->
-          </div>
-
-
         </div>
 
         <!-- Portobello Tab -->
         <div class="tab-pane position-relative" id="portobello-tab-pane" role="tabpanel" aria-labelledby="portobelloBtn" tabindex="0">
+
           <ul class="nav nav-tabs" id="portobelloSubTab" role="tablist">
             <li class="nav-item" role="presentation">
               <button class="nav-link active" id="portobelloTableBtn" data-bs-toggle="tab" data-bs-target="#portobello-table-tab-pane" type="button" role="tab" aria-controls="portobello-table-tab-pane" aria-selected="true">Table</button>
             </li>
+            <li class="nav-item" role="presentation" style="display: none;" id="portobelloLineupsTab">
+              <button class="nav-link" id="portobelloLineupsBtn" data-bs-toggle="tab" data-bs-target="#portobello-lineups-tab-pane" type="button" role="tab" aria-controls="portobello-lineups-tab-pane" aria-selected="false">Lineups</button>
+            </li>
+          
           </ul>
+
           <div class="tab-content" id="portobelloSubTabContent">
             <div class="tab-pane show active position-relative" id="portobello-table-tab-pane" role="tabpanel" aria-labelledby="portobelloTableBtn" tabindex="0">
               <div>
@@ -159,7 +148,7 @@
                 </div>
               </div>
               <div class="generate-teams-div">
-                <button id="generateTeamBtnPortobello" class="btn" disabled>
+                <button id="generateTeamBtnPortobello" class="btn">
                   Generate Teams <i class="fa-solid fa-users fa-fw icon-margin"></i>
                 </button>
               </div>
@@ -172,15 +161,23 @@
                 </div>
             </div>
             </div>
+
+            <div class="tab-pane position-relative" id="portobello-lineups-tab-pane" role="tabpanel" aria-labelledby="portobelloLineupsBtn" tabindex="0"></div>
+
           </div>
         </div>
 
         <!-- Corn Exchange Tab -->
         <div class="tab-pane position-relative" id="cornExchange-tab-pane" role="tabpanel" aria-labelledby="cornExchangeBtn" tabindex="0">
           <ul class="nav nav-tabs" id="cornExchangeSubTab" role="tablist">
+
             <li class="nav-item" role="presentation">
               <button class="nav-link active" id="cornExchangeTableBtn" data-bs-toggle="tab" data-bs-target="#cornExchange-table-tab-pane" type="button" role="tab" aria-controls="cornExchange-table-tab-pane" aria-selected="true">Table</button>
             </li>
+            <li class="nav-item" role="presentation" style="display: none;" id="cornExchangeLineupsTab">
+              <button class="nav-link" id="cornExchangeLineupsBtn" data-bs-toggle="tab" data-bs-target="#cornExchange-lineups-tab-pane" type="button" role="tab" aria-controls="cornExchange-lineups-tab-pane" aria-selected="false">Lineups</button>
+            </li>
+
           </ul>
           <div class="tab-content" id="cornExchangeSubTabContent">
             <div class="tab-pane show active position-relative" id="cornExchange-table-tab-pane" role="tabpanel" aria-labelledby="cornExchangeTableBtn" tabindex="0">
@@ -203,7 +200,7 @@
                 </div>
               </div>
               <div class="generate-teams-div">
-                <button id="generateTeamBtnCornExchange" class="btn" disabled>
+                <button id="generateTeamBtnCornExchange" class="btn">
                   Generate Teams <i class="fa-solid fa-users fa-fw icon-margin"></i>
                 </button>
               </div>
@@ -219,8 +216,10 @@
             </div>
             </div>
           </div>
-        </div>
 
+          <div class="tab-pane position-relative" id="cornExchange-lineups-tab-pane" role="tabpanel" aria-labelledby="cornExchangeLineupsBtn" tabindex="0"></div>
+
+        </div>
       </div>
 
     </section>
@@ -230,7 +229,7 @@
     </footer>
 
     <!-- Modal for adding a new player -->
-  <div class="modal fade" id="addPlayerModal" tabindex="-1" aria-labelledby="addPlayerModalLabel" aria-hidden="true">
+  <div class="modal fade" id="addPlayerModal" tabindex="-1" aria-labelledby="addPlayerModalLabel">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">

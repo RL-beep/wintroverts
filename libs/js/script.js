@@ -411,7 +411,57 @@ $('#generateTeamBtnPeffermill').on('click', function() {
     });
 
     // Populate the new tables in the lineups div
-    populatePeffermillLineupsTables(players);
+    createLineupsFixture(players,'#peffermill');
+});
+
+$('#generateTeamBtnPortobello').on('click', function() {
+    // Display hidden buttons
+    $('#portobelloSubTab .nav-link').not('#portobelloTableBtn').css('display', 'block');
+
+    // Extract player information from the existing table
+    const players = {};
+    $('#portobelloTableBody tr').each(function() {
+        const playerName = $(this).find('td[data-field="Player"]').text().trim();
+        const playerImage = $(this).find('td[data-field="Player"] img').attr('src').trim();
+        const atkRating = $(this).find('td[data-field="AtkRating"] select').val().trim();
+        const defRating = $(this).find('td[data-field="DefRating"] select').val().trim();
+        const available = $(this).find('td[data-field="Available"] input[type="checkbox"]').prop('checked');
+        players[playerName] = {
+            playerName: playerName,
+            playerImage: playerImage,
+            AtkRating: atkRating,
+            DefRating: defRating,
+            Available: available
+        };
+    });
+
+    // Populate the new tables in the lineups div
+    createLineupsFixture(players,'#portobello');
+});
+
+$('#generateTeamBtnCornExchange').on('click', function() {
+    // Display hidden buttons
+    $('#cornExchangeSubTab .nav-link').not('#cornExchangeTableBtn').css('display', 'block');
+
+    // Extract player information from the existing table
+    const players = {};
+    $('#cornExchangeTableBody tr').each(function() {
+        const playerName = $(this).find('td[data-field="Player"]').text().trim();
+        const playerImage = $(this).find('td[data-field="Player"] img').attr('src').trim();
+        const atkRating = $(this).find('td[data-field="AtkRating"] select').val().trim();
+        const defRating = $(this).find('td[data-field="DefRating"] select').val().trim();
+        const available = $(this).find('td[data-field="Available"] input[type="checkbox"]').prop('checked');
+        players[playerName] = {
+            playerName: playerName,
+            playerImage: playerImage,
+            AtkRating: atkRating,
+            DefRating: defRating,
+            Available: available
+        };
+    });
+
+    // Populate the new tables in the lineups div
+    createLineupsFixture(players,'#cornExchange');
 });
 
 function handleAppearancesButtonClick(event, venue) {
@@ -462,13 +512,13 @@ document.getElementById('decrementAppearancesBtnCornExchange').addEventListener(
 
 //------------------------------------- Lineups TAB Functions --------------------------------------------------------
 
-async function populatePeffermillLineupsTables(players) {
+async function createLineupsFixture(players, pane) {
     const teammateAppearancesJson = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/teammate_appearances_counts.json?alt=media');
     const opponentAppearancesJson = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/opponent_appearances_counts.json?alt=media');
     $('#newPreloader').show();
 
     try {
-        $('#peffermill-lineups-tab-pane').empty();
+        $(`${pane}-lineups-tab-pane`).empty();
 
         const headers = ['Player', 'Atk Rating', 'Def Rating', 'Teammate Appearances', 'Opponent Appearances'];
 
@@ -501,7 +551,7 @@ async function populatePeffermillLineupsTables(players) {
         if (availablePlayers.length <= 16) {
             alert("Must have a minimum of 17 available players");
 
-            $('#peffermillLineupsBtn').hide();
+
             $('#newPreloader').fadeOut('slow');
 
             return;
@@ -581,7 +631,7 @@ async function populatePeffermillLineupsTables(players) {
             copyPlayerNamesToClipboard();
         });
 
-        const lineupsDiv = $('#peffermill-lineups-tab-pane');
+        const lineupsDiv = $(`${pane}-lineups-tab-pane`);
         lineupsDiv.append(container1, copyIcon, container2);
 
         function recalculateTotals() {
@@ -682,8 +732,16 @@ async function populatePeffermillLineupsTables(players) {
     } finally {
         $('#newPreloader').fadeOut('slow');
 
-        $('#peffermillLineupsBtn').show();
-        $('#peffermillLineupsBtn').tab('show');
+
+
+        $(`${pane}LineupsBtn`).show();
+        $(`${pane}LineupsTab`).css('display', 'block'); // Unhide the tab
+        $(`${pane}LineupsBtn`).tab('show');
+
+        // Show Portobello Lineups Button and activate it dynamically
+
+$('#portobelloLineupsBtn').tab('show'); // Activate the tab
+
     }
 }
 

@@ -427,7 +427,10 @@ td[data-field="Delete"]  {
 }
 
 /* Container for the tables and copy icon */
-#peffermill-lineups-tab-pane {
+#peffermill-lineups-tab-pane,
+#portobello-lineups-tab-pane,
+#cornExchange-lineups-tab-pane
+{
     display: flex;
     justify-content: space-evenly; 
     align-items: center;
