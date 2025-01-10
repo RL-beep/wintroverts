@@ -8,8 +8,12 @@ from google.cloud import storage  # Import Google Cloud Storage
 # Step 1: Set up the credentials for Google Sheets API and Firebase Storage
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-# The path to your credentials JSON file (since it's in the same directory)
-creds_path = os.path.join(os.path.dirname(__file__), 'wintroverts-90302-18f08372de48.json')
+creds_path = os.path.join(
+    os.path.dirname(__file__), 
+    '..', '..', 'google', 
+    'wintroverts-90302-18f08372de48.json'
+)
+creds_path = os.path.abspath(creds_path)  # Convert to absolute path for reliability
 
 # Load the credentials from the JSON file for Google Sheets
 creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
@@ -21,7 +25,7 @@ client = gspread.authorize(creds)
 sheet = client.open_by_url('https://docs.google.com/spreadsheets/d/1rX5runSBVi63uurXYF1-MeU6v5PJmW712cS31K4KEBw/edit?usp=sharing')
 
 # Get the '2024' sheet by name
-worksheet = sheet.worksheet('2024')
+worksheet = sheet.worksheet('2025')
 
 # Fetch all data from the worksheet as a list of lists (rows)
 sheet_data = worksheet.get_all_values()

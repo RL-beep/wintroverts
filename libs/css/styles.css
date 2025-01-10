@@ -313,6 +313,17 @@ td[data-field="Delete"]  {
     cursor: pointer;
 }
 
+.export-button{
+    font-family: "Manrope regular", sans-serif;
+    color: whitesmoke;
+    background-color: #3a7d6b;
+    border: 2px solid #1A313C;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
 #generateTeamBtnPeffermill:active, 
 #addPlayerBtnPeffermill:active, 
 #incrementAppearancesBtnPeffermill:active, 
@@ -440,6 +451,18 @@ td[data-field="Delete"]  {
     margin-top: 10px;
 }
 
+.date-picker-container{
+    display: flex;
+    justify-content:center; 
+}
+
+/* Style for the date picker (calendar) */
+.lineups-date-picker {
+
+    padding: 5px 10px;
+    font-size: 1.1em;  
+}
+
 /* Container for individual tables */
 .lineups-container {
     margin-bottom: auto;
@@ -506,6 +529,9 @@ footer {
         width:100%;
         padding: 10px 15px;
     }
+
+
+
     #peffermillSubTab,
     #portobelloSubTab,
     #cornExchangeSubTab {
@@ -557,6 +583,9 @@ footer {
         margin-top: 20px;
         margin-bottom: 20px;
     }
+    .action-container{
+        margin-left: 0px !important;
+    }
 
 }
 
@@ -580,6 +609,9 @@ footer {
     .delete-btn {
         padding: 0.10rem 0.2rem;
         font-size: 0.475rem;
+    }
+    .action-container{
+        margin-left: 0px !important;
     }
 }
 

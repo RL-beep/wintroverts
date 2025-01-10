@@ -1,7 +1,10 @@
 //------------------------------------- Global Variables -------------------------------------------------------------
+// Import required libraries
 
 let sortDirection = {}; // Sort dirction of table Columns
 let playerImages = {}; // Cache for player images
+// Create an object to hold the dynamic date variables
+let selectedDates = {};
 
 //------------------------------------- On load functions -------------------------------------------------------------
 
@@ -512,6 +515,25 @@ document.getElementById('decrementAppearancesBtnCornExchange').addEventListener(
 
 //------------------------------------- Lineups TAB Functions --------------------------------------------------------
 
+
+// Function to create the date picker input and handle the date change event
+function createDatePicker(pane) {
+
+    // Handle the date selection change event
+    $(`${pane}-lineups-date-picker`).on('change', function() {
+        const selectedDate = $(this).val(); // Get the selected date
+
+        // Use the pane string (without the #) as the key for dynamic variables
+        const key = `${pane.slice(1)}SelectedDate`; 
+        selectedDates[key] = selectedDate; 
+
+        // Log the selected date
+        console.log(`Selected Date for ${key}: `, selectedDates[key]);
+    });
+
+}
+
+// Main function to create lineups
 async function createLineupsFixture(players, pane) {
     const teammateAppearancesJson = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/teammate_appearances_counts.json?alt=media');
     const opponentAppearancesJson = await fetchJSONFromFirebase('https://firebasestorage.googleapis.com/v0/b/wintroverts-90302.appspot.com/o/opponent_appearances_counts.json?alt=media');
@@ -519,6 +541,10 @@ async function createLineupsFixture(players, pane) {
 
     try {
         $(`${pane}-lineups-tab-pane`).empty();
+
+        // Create and append the date picker
+        const lineupsDiv = $(`${pane}-lineups-tab-pane`);
+        createDatePicker(pane);
 
         const headers = ['Player', 'Atk Rating', 'Def Rating', 'Teammate Appearances', 'Opponent Appearances'];
 
@@ -550,37 +576,17 @@ async function createLineupsFixture(players, pane) {
 
         if (availablePlayers.length <= 16) {
             alert("Must have a minimum of 17 available players");
-
-
+            console.log(pane)
             $('#newPreloader').fadeOut('slow');
-
+            $(`${pane}-lineups-tab-pane`).empty();
+            $(`${pane}-date-picker-container`).hide(); 
             return;
+        } else {
+            $(`${pane}-date-picker-container`).show(); 
         }
 
         const unique_match_list = findTeamsHeuristicFunction(availablePlayers);
         const { teamA, teamB } = await generateBalancedTeams(unique_match_list, availablePlayers);
-
-        console.log("Lightside: ", teamA);
-        console.log("Darkside: ", teamB);
-
-        function createRow(player) {
-            const img = $('<img>').attr('src', player.playerData.playerImage).addClass('lineups-player-image');
-            const playerNameSpan = $('<span>').text(player.playerName);
-            const playerCell = $('<td>').append(img, playerNameSpan);
-
-            const atkRating = Number(player.playerData.AtkRating);
-            const defRating = Number(player.playerData.DefRating);
-            const teammateAppearances = player.playerData.teammates.totalTeammateAppearances;
-            const opponentAppearances = player.playerData.opponents.totalOpponentAppearances;
-
-            return $('<tr>').append(
-                playerCell,
-                $('<td>').text(atkRating),
-                $('<td>').text(defRating),
-                $('<td>').text(teammateAppearances),
-                $('<td>').text(opponentAppearances)
-            ).data('playerData', player.playerData).data('playerName', player.playerName);
-        }
 
         teamA.forEach(player => {
             const row = createRow(player);
@@ -627,12 +633,59 @@ async function createLineupsFixture(players, pane) {
 
         const copyIcon = $('<i>').addClass('fas fa-copy copy-icon');
 
+        // Add click event to copyIcon
         copyIcon.on('click', function() {
             copyPlayerNamesToClipboard();
         });
+        
+        // Create the action button
+        const actionButton = $('<button>')
+            .addClass('export-button')
+            .text('EXPORT TO DOC');
+        
+        // Add click event to the action button
+        actionButton.on('click', function() {
+            exportToDoc(pane);
+        });
+        
+        // Create a container for the copy icon and the action button
+        const actionContainer = $('<div>')
+            .addClass('action-container')
+            .css({
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+                // marginLeft: '40px'
+            });
+        
+        // Append the copy icon and action button to the action container
+        actionContainer.append(copyIcon, actionButton);
+        
+        // Append the action container to the lineupsDiv, at the same level as totals1 and totals2
+        container1.append(header1, table1, totals1, );
+        container2.append(header2, table2, totals2,);
+        
+        // Append containers to the main div
+        lineupsDiv.append(container1,actionContainer,container2);
 
-        const lineupsDiv = $(`${pane}-lineups-tab-pane`);
-        lineupsDiv.append(container1, copyIcon, container2);
+        function createRow(player) {
+            const img = $('<img>').attr('src', player.playerData.playerImage).addClass('lineups-player-image');
+            const playerNameSpan = $('<span>').text(player.playerName);
+            const playerCell = $('<td>').append(img, playerNameSpan);
+
+            const atkRating = Number(player.playerData.AtkRating);
+            const defRating = Number(player.playerData.DefRating);
+            const teammateAppearances = player.playerData.teammates.totalTeammateAppearances;
+            const opponentAppearances = player.playerData.opponents.totalOpponentAppearances;
+
+            return $('<tr>').append(
+                playerCell,
+                $('<td>').text(atkRating),
+                $('<td>').text(defRating),
+                $('<td>').text(teammateAppearances),
+                $('<td>').text(opponentAppearances)
+            ).data('playerData', player.playerData).data('playerName', player.playerName);
+        }
 
         function recalculateTotals() {
             let totalAtk1 = 0, totalDef1 = 0;
@@ -727,23 +780,20 @@ async function createLineupsFixture(players, pane) {
             }
         }).disableSelection();
 
+
+
+
     } catch (error) {
         console.error('Error populating lineups:', error);
     } finally {
         $('#newPreloader').fadeOut('slow');
-
-
-
         $(`${pane}LineupsBtn`).show();
-        $(`${pane}LineupsTab`).css('display', 'block'); // Unhide the tab
+        $(`${pane}LineupsTab`).css('display', 'block');
         $(`${pane}LineupsBtn`).tab('show');
-
-        // Show Portobello Lineups Button and activate it dynamically
-
-$('#portobelloLineupsBtn').tab('show'); // Activate the tab
-
     }
 }
+
+
 
 // Function to copy player names, ratings, and appearances to clipboard
 function copyPlayerNamesToClipboard() {
@@ -754,37 +804,41 @@ function copyPlayerNamesToClipboard() {
     // Get the player data from table 1
     $('.lineups-table-1 tbody tr').each(function(index) {
         let playerName = $(this).data('playerName');
-        let atkRating = $(this).find('td:nth-child(2)').text();
-        let defRating = $(this).find('td:nth-child(3)').text();
-        let teammateAppearances = $(this).find('td:nth-child(4)').text();
-        let opponentAppearances = $(this).find('td:nth-child(5)').text();
+        if (playerName && !playerName.startsWith('FILLER')) { // Exclude players with names starting with "FILLER"
+            let atkRating = $(this).find('td:nth-child(2)').text();
+            let defRating = $(this).find('td:nth-child(3)').text();
+            let teammateAppearances = $(this).find('td:nth-child(4)').text();
+            let opponentAppearances = $(this).find('td:nth-child(5)').text();
 
-        table1Players.push({
-            number: index + 1,
-            playerName: playerName,
-            atkRating: atkRating,
-            defRating: defRating,
-            teammateAppearances: teammateAppearances,
-            opponentAppearances: opponentAppearances
-        });
+            table1Players.push({
+                number: index + 1,
+                playerName: playerName,
+                atkRating: atkRating,
+                defRating: defRating,
+                teammateAppearances: teammateAppearances,
+                opponentAppearances: opponentAppearances
+            });
+        }
     });
 
     // Get the player data from table 2
     $('.lineups-table-2 tbody tr').each(function(index) {
         let playerName = $(this).data('playerName');
-        let atkRating = $(this).find('td:nth-child(2)').text();
-        let defRating = $(this).find('td:nth-child(3)').text();
-        let teammateAppearances = $(this).find('td:nth-child(4)').text();
-        let opponentAppearances = $(this).find('td:nth-child(5)').text();
+        if (playerName && !playerName.startsWith('FILLER')) { // Exclude players with names starting with "FILLER"
+            let atkRating = $(this).find('td:nth-child(2)').text();
+            let defRating = $(this).find('td:nth-child(3)').text();
+            let teammateAppearances = $(this).find('td:nth-child(4)').text();
+            let opponentAppearances = $(this).find('td:nth-child(5)').text();
 
-        table2Players.push({
-            number: index + 1,
-            playerName: playerName,
-            atkRating: atkRating,
-            defRating: defRating,
-            teammateAppearances: teammateAppearances,
-            opponentAppearances: opponentAppearances
-        });
+            table2Players.push({
+                number: index + 1,
+                playerName: playerName,
+                atkRating: atkRating,
+                defRating: defRating,
+                teammateAppearances: teammateAppearances,
+                opponentAppearances: opponentAppearances
+            });
+        }
     });
 
     // Combine player data with side labels
@@ -851,6 +905,357 @@ function pad(str, width, padChar = ' ') {
     str = str.toString();
     return str + padChar.repeat(Math.max(0, width - str.length));
 }
+
+function exportToDoc(pane){
+    const key = `${pane.slice(1)}SelectedDate`; 
+    if (!selectedDates[key]){
+        alert('Please select a date!');
+    } else {
+        connectToGoogleSheet(pane);
+    }
+}
+
+
+function connectToGoogleSheet(pane) {
+    google.accounts.oauth2.initTokenClient({
+      client_id: "537691008365-a7e703685vonbh9aqm2ge6l7qkbkue6k.apps.googleusercontent.com",
+      scope: "https://www.googleapis.com/auth/spreadsheets",
+      callback: (response) => {
+        console.log("Access Token:", response.access_token);
+        fetchGoogleSheetData(response.access_token,pane);
+      },
+    }).requestAccessToken();
+  }
+  
+
+  function fetchGoogleSheetData(accessToken, pane) { 
+    const spreadsheetId = "1rX5runSBVi63uurXYF1-MeU6v5PJmW712cS31K4KEBw";
+    const sheetName = "2025"; // Hardcoded sheet name
+    const range = `${sheetName}!A1:E10`; // Use the sheetName variable
+  
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    console.error("API Error Details:", err);
+                    alert("Your email does not have permission to access the Google Sheet");
+                    throw new Error(`API Error: ${err.error.message}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            const exportedFixtureListDetails = getCurrentFixtureDetails();
+            
+            // Call findLastTotalRowAndInsert and insert players after the last total row
+            findLastTotalRow(accessToken, spreadsheetId, sheetName, (startRow) => {
+                insertPlayersIntoSheet(accessToken, spreadsheetId, sheetName, exportedFixtureListDetails, startRow, pane)
+                    .then(() => {
+                        // Display success alert if the players were inserted correctly
+                        alert("Fixture exported successfully!");
+                    })
+                    .catch(error => {
+                        // Display error alert if there was an issue inserting the players
+                        alert("An error occurred while exporting the fixture.");
+                        console.error("Error inserting players into sheet:", error);
+                    });
+            });
+        })
+        .catch(error => {
+            // Display error alert if fetching data fails
+            alert("An error occurred while fetching the sheet data.");
+            console.error("Error fetching sheet data:", error);
+        });
+}
+
+
+function insertPlayersIntoSheet(accessToken, spreadsheetId, sheetName, fixtureDetails, startRow, pane) {
+    const lightSidePlayers = fixtureDetails.find(item => item.side === '--LIGHTSIDE--\n')?.players || [];
+    const darkSidePlayers = fixtureDetails.find(item => item.side === '--DARKSIDE--\n')?.players || [];
+    const numberOfRowsToInsert = Math.max(lightSidePlayers.length, darkSidePlayers.length) + 3;
+    const key = `${pane.slice(1)}SelectedDate`;
+
+    // Extract and format the date
+    const dateString = selectedDates[key]; // assuming this is something like "2025-01-21"
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString('en-GB', {
+        weekday: 'short', // "Tue"
+        day: '2-digit',   // "21"
+        month: 'short',   // "Jan"
+    }).replace(',', ''); // Remove the comma from the formatted date
+
+    console.log("Formatted Date:", formattedDate);
+
+    // Check that getSheetId returns a promise
+    getSheetId(accessToken, spreadsheetId, sheetName)
+        .then(sheetId => {
+            if (!sheetId) {
+                throw new Error("Sheet ID is undefined.");
+            }
+
+            const insertRequests = [{
+                insertDimension: {
+                    range: {
+                        sheetId: sheetId,
+                        dimension: "ROWS",
+                        startIndex: startRow,
+                        endIndex: startRow + numberOfRowsToInsert, // Insert rows for players + 1 for header
+                    }
+                }
+            }];
+
+            // Insert the first row with emojis and the formatted date in Column A
+            insertRequests.push({
+                updateCells: {
+                    range: {
+                        sheetId: sheetId,
+                        startRowIndex: startRow,
+                        endRowIndex: startRow + 1,
+                        startColumnIndex: 0, // Column A (0-based index)
+                        endColumnIndex: 10,  // Columns B-J
+                    },
+                    rows: [{
+                        values: [
+                            { 
+                                userEnteredValue: { stringValue: formattedDate },  // Insert formatted date in Column A
+                                userEnteredFormat: { 
+                                    horizontalAlignment: "RIGHT", 
+                                    textFormat: { 
+                                        fontFamily: "Calibri", 
+                                        fontSize: 12, 
+                                        bold: true
+                                    },
+                                    backgroundColor: { 
+                                        red: 0.471, 
+                                        green: 0.565, 
+                                        blue: 0.612 
+                                    } // Background color #78909c (in RGB format)
+                                } 
+                            },
+                            { userEnteredValue: { stringValue: "🏳️" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }, // Column C
+                            { userEnteredValue: { stringValue: "🗡️" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }, // Column D
+                            { userEnteredValue: { stringValue: "🛡️" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }, // Column E
+                            { userEnteredValue: { stringValue: "" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }, // Empty for Column F
+                            { userEnteredValue: { stringValue: "" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }, // Empty for Column G
+                            { userEnteredValue: { stringValue: "🏴" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }, // Column H
+                            { userEnteredValue: { stringValue: "🗡️" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }, // Column I
+                            { userEnteredValue: { stringValue: "🛡️" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }  // Column J
+                        ]
+                    }],
+                    fields: "userEnteredValue,userEnteredFormat(horizontalAlignment,textFormat,backgroundColor)"
+                }
+            });
+
+            const createUpdateRequest = (rowIndex, columnIndex, value, bold = false) => ({
+                updateCells: {
+                    range: {
+                        sheetId: sheetId,
+                        startRowIndex: rowIndex,
+                        endRowIndex: rowIndex + 1,
+                        startColumnIndex: columnIndex,
+                        endColumnIndex: columnIndex + 1,
+                    },
+                    rows: [{
+                        values: [{
+                            userEnteredValue: { stringValue: String(value) },
+                            userEnteredFormat: {
+                                horizontalAlignment: "CENTER",
+                                textFormat: {
+                                    fontFamily: "Arial",
+                                    fontSize: 12,
+                                    bold: bold,
+                                }
+                            }
+                        }]
+                    }],
+                    fields: "userEnteredValue,userEnteredFormat(horizontalAlignment,textFormat)"
+                }
+            });
+
+            // Helper to calculate totals
+            const calculateTotal = (players, key) => players.reduce((sum, player) => sum + parseFloat(player[key] || 0), 0);
+
+            // Insert LIGHTSIDE players
+            lightSidePlayers.forEach((player, index) => {
+                const rowIndex = startRow + index + 1; // Row index for LIGHTSIDE
+                insertRequests.push(createUpdateRequest(rowIndex, 1, player.playerName)); // Column B: Player name
+                insertRequests.push(createUpdateRequest(rowIndex, 2, player.atkRating)); // Column C: Attack rating
+                insertRequests.push(createUpdateRequest(rowIndex, 3, player.defRating)); // Column D: Defence rating
+
+                const totalRating = parseFloat(player.atkRating || 0) + parseFloat(player.defRating || 0);
+                insertRequests.push(createUpdateRequest(rowIndex, 4, totalRating)); // Column E: Total rating
+            });
+
+            // Insert LIGHTSIDE total row
+            const lightTotalRowIndex = startRow + lightSidePlayers.length + 1;
+            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 1, "TOTAL", true)); // Column B
+            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 2, calculateTotal(lightSidePlayers, "atkRating"), true)); // Column C
+            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 3, calculateTotal(lightSidePlayers, "defRating"), true)); // Column D
+            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 4, calculateTotal(lightSidePlayers, "atkRating") + calculateTotal(lightSidePlayers, "defRating"), true)); // Column E
+
+            // Insert DARKSIDE players
+            darkSidePlayers.forEach((player, index) => {
+                const rowIndex = startRow + index + 1; // Row index for DARKSIDE
+                insertRequests.push(createUpdateRequest(rowIndex, 6, player.playerName)); // Column G: Player name
+                insertRequests.push(createUpdateRequest(rowIndex, 7, player.atkRating)); // Column H: Attack rating
+                insertRequests.push(createUpdateRequest(rowIndex, 8, player.defRating)); // Column I: Defence rating
+
+                const totalRating = parseFloat(player.atkRating || 0) + parseFloat(player.defRating || 0);
+                insertRequests.push(createUpdateRequest(rowIndex, 9, totalRating)); // Column J: Total rating
+            });
+
+            // Insert DARKSIDE total row
+            const darkTotalRowIndex = startRow + darkSidePlayers.length + 1;
+            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 6, "TOTAL", true)); // Column G
+            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 7, calculateTotal(darkSidePlayers, "atkRating"), true)); // Column H
+            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 8, calculateTotal(darkSidePlayers, "defRating"), true)); // Column I
+            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 9, calculateTotal(darkSidePlayers, "atkRating") + calculateTotal(darkSidePlayers, "defRating"), true)); // Column J
+
+            // Send the batch update request
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ requests: insertRequests }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        console.error("Error inserting players:", err);
+                        alert("An error occurred while exporting the fixture.");
+                        throw new Error(`API Error: ${err.error.message}`);
+                    });
+                }
+                // Show success alert if data was inserted successfully
+                alert("Fixture exported successfully!");
+                console.log("Players successfully inserted into the sheet with emojis, formatting, and totals.");
+            })
+            .catch(error => {
+                alert("An error occurred while exporting the fixture.");
+                console.error("Error inserting players:", error);
+            });
+        })
+        .catch(error => {
+            alert("An error occurred while fetching sheet data.");
+            console.error("Error fetching sheet ID:", error);
+        });
+}
+
+
+
+
+
+
+
+
+
+
+  
+  function findLastTotalRow(accessToken, spreadsheetId, sheetName, callback) {
+    const range = `${sheetName}!B:B`; // Fetch all of column B
+  
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+            const values = data.values || [];
+            let lastTotalRow = -1;
+  
+            // Find the last occurrence of "TOTAL"
+            for (let i = values.length - 1; i >= 0; i--) {
+                if (values[i][0] && values[i][0].trim().toUpperCase() === "TOTAL") {
+                    lastTotalRow = i + 1; // Add 1 to get 1-based index
+                    break;
+                }
+            }
+  
+            if (lastTotalRow !== -1) {
+                console.log(`The last row with "TOTAL" in column B is row: ${lastTotalRow}`);
+                callback(lastTotalRow + 1); // Pass the next row to the callback
+            } else {
+                console.log(`"TOTAL" not found in column B.`);
+                callback(0); // Start from the first row if "TOTAL" is not found
+            }
+        })
+        .catch(error => console.error("Error fetching column B data:", error));
+}
+
+function getCurrentFixtureDetails() {
+    // Initialize arrays to store player data
+    let table1Players = [];
+    let table2Players = [];
+
+    // Get the player data from table 1
+    $('.lineups-table-1 tbody tr').each(function(index) {
+        let playerName = $(this).data('playerName');
+        if (playerName && !playerName.startsWith('FILLER')) { // Exclude players with names starting with "FILLER"
+            let atkRating = $(this).find('td:nth-child(2)').text();
+            let defRating = $(this).find('td:nth-child(3)').text();
+            let teammateAppearances = $(this).find('td:nth-child(4)').text();
+            let opponentAppearances = $(this).find('td:nth-child(5)').text();
+
+            table1Players.push({
+                number: index + 1,
+                playerName: playerName,
+                atkRating: atkRating,
+                defRating: defRating,
+                teammateAppearances: teammateAppearances,
+                opponentAppearances: opponentAppearances
+            });
+        }
+    });
+
+    // Get the player data from table 2
+    $('.lineups-table-2 tbody tr').each(function(index) {
+        let playerName = $(this).data('playerName');
+        if (playerName && !playerName.startsWith('FILLER')) { // Exclude players with names starting with "FILLER"
+            let atkRating = $(this).find('td:nth-child(2)').text();
+            let defRating = $(this).find('td:nth-child(3)').text();
+            let teammateAppearances = $(this).find('td:nth-child(4)').text();
+            let opponentAppearances = $(this).find('td:nth-child(5)').text();
+
+            table2Players.push({
+                number: index + 1,
+                playerName: playerName,
+                atkRating: atkRating,
+                defRating: defRating,
+                teammateAppearances: teammateAppearances,
+                opponentAppearances: opponentAppearances
+            });
+        }
+    });
+
+    // Sort players by name in reverse order for each table
+    table1Players.sort((a, b) => b.playerName.localeCompare(a.playerName)); // Reverse order
+    table2Players.sort((a, b) => b.playerName.localeCompare(a.playerName)); // Reverse order
+
+    // Combine player data with side labels
+    let allPlayerData = [
+        { side: '--LIGHTSIDE--\n', players: table1Players },
+        { side: '--DARKSIDE--\n', players: table2Players }
+    ];
+
+    return allPlayerData;
+}
+
+
+  
+  
+  
+  
+  
+  
+
+
 //------------------------------------- Generating Team Functions -----------------------------------------------------
 
 
@@ -1550,3 +1955,20 @@ function generateRatingOptions(selectedRating) {
     }
     return options;
 }
+
+function getSheetId(accessToken, spreadsheetId, sheetName) {
+    return fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        const sheet = data.sheets.find(sheet => sheet.properties.title === sheetName);
+        if (!sheet) {
+          throw new Error(`Sheet with name "${sheetName}" not found.`);
+        }
+        return sheet.properties.sheetId;
+      });
+  }
+  
