@@ -1045,12 +1045,46 @@ function insertPlayersIntoSheet(accessToken, spreadsheetId, sheetName, fixtureDe
                             { userEnteredValue: { stringValue: "🗡️" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }, // Column I
                             { userEnteredValue: { stringValue: "🛡️" }, userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { fontFamily: "Arial", fontSize: 12 } } }  // Column J
                         ]
-                    }],
+                    }], 
                     fields: "userEnteredValue,userEnteredFormat(horizontalAlignment,textFormat,backgroundColor)"
                 }
             });
 
-            const createUpdateRequest = (rowIndex, columnIndex, value, bold = false) => ({
+            const createUpdateRequest = (rowIndex, columnIndex, value, bold = false, isFormula = false) => ({
+                updateCells: {
+                    range: {
+                        sheetId: sheetId,
+                        startRowIndex: rowIndex,
+                        endRowIndex: rowIndex + 1,
+                        startColumnIndex: columnIndex,
+                        endColumnIndex: columnIndex + 1,
+                    },
+                    rows: [{
+                        values: [({
+                            userEnteredValue: isFormula
+                                ? { formulaValue: value } // Insert formula
+                                : typeof value === 'number' // Check if the value is a number
+                                    ? { numberValue: value } // Insert number
+                                    : { stringValue: String(value) }, // Insert plain text
+                            userEnteredFormat: {
+                                horizontalAlignment: "CENTER",
+                                textFormat: {
+                                    fontFamily: "Arial",
+                                    fontSize: 12,
+                                    bold: bold,
+                                }
+                            }
+                        })]
+                    }],
+                    fields: "userEnteredValue,userEnteredFormat(horizontalAlignment,textFormat)"
+                }
+            });
+
+            // Helper to calculate totals
+            // const calculateTotal = (players, key) => players.reduce((sum, player) => sum + parseFloat(player[key] || 0), 0);
+
+            // Helper to create update requests with right alignment for emojis
+            const createEmojiUpdateRequest = (rowIndex, columnIndex, emoji) => ({
                 updateCells: {
                     range: {
                         sheetId: sheetId,
@@ -1061,13 +1095,12 @@ function insertPlayersIntoSheet(accessToken, spreadsheetId, sheetName, fixtureDe
                     },
                     rows: [{
                         values: [{
-                            userEnteredValue: { stringValue: String(value) },
+                            userEnteredValue: { stringValue: emoji }, // Insert emoji
                             userEnteredFormat: {
-                                horizontalAlignment: "CENTER",
+                                horizontalAlignment: "RIGHT", // Right-align the emoji
                                 textFormat: {
                                     fontFamily: "Arial",
-                                    fontSize: 12,
-                                    bold: bold,
+                                    fontSize: 12
                                 }
                             }
                         }]
@@ -1076,44 +1109,59 @@ function insertPlayersIntoSheet(accessToken, spreadsheetId, sheetName, fixtureDe
                 }
             });
 
-            // Helper to calculate totals
-            const calculateTotal = (players, key) => players.reduce((sum, player) => sum + parseFloat(player[key] || 0), 0);
-
             // Insert LIGHTSIDE players
             lightSidePlayers.forEach((player, index) => {
                 const rowIndex = startRow + index + 1; // Row index for LIGHTSIDE
                 insertRequests.push(createUpdateRequest(rowIndex, 1, player.playerName)); // Column B: Player name
-                insertRequests.push(createUpdateRequest(rowIndex, 2, player.atkRating)); // Column C: Attack rating
-                insertRequests.push(createUpdateRequest(rowIndex, 3, player.defRating)); // Column D: Defence rating
+                insertRequests.push(createUpdateRequest(rowIndex, 2, parseFloat(player.atkRating))); // Column C: Attack rating
+                insertRequests.push(createUpdateRequest(rowIndex, 3, parseFloat(player.defRating))); // Column D: Defence rating
 
                 const totalRating = parseFloat(player.atkRating || 0) + parseFloat(player.defRating || 0);
                 insertRequests.push(createUpdateRequest(rowIndex, 4, totalRating)); // Column E: Total rating
+
+                // Insert the emoji for attack or defence rating comparison in Column A
+                if (parseFloat(player.defRating) > parseFloat(player.atkRating)) {
+                    insertRequests.push(createEmojiUpdateRequest(rowIndex, 0, "🛡️")); // Column A: Defence rating emoji
+                } else if (parseFloat(player.atkRating) > parseFloat(player.defRating)) {
+                    insertRequests.push(createEmojiUpdateRequest(rowIndex, 0, "🗡️")); // Column A: Attack rating emoji
+                } else {
+                    insertRequests.push(createEmojiUpdateRequest(rowIndex, 0, "")); // Column A: No emoji if equal
+                }
             });
 
             // Insert LIGHTSIDE total row
             const lightTotalRowIndex = startRow + lightSidePlayers.length + 1;
             insertRequests.push(createUpdateRequest(lightTotalRowIndex, 1, "TOTAL", true)); // Column B
-            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 2, calculateTotal(lightSidePlayers, "atkRating"), true)); // Column C
-            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 3, calculateTotal(lightSidePlayers, "defRating"), true)); // Column D
-            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 4, calculateTotal(lightSidePlayers, "atkRating") + calculateTotal(lightSidePlayers, "defRating"), true)); // Column E
+            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 2, `=SUM(C${startRow + 2}:C${lightTotalRowIndex})`, true, true)); // Column C
+            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 3, `=SUM(D${startRow + 2}:D${lightTotalRowIndex})`, true, true)); // Column D
+            insertRequests.push(createUpdateRequest(lightTotalRowIndex, 4, `=SUM(E${startRow + 2}:E${lightTotalRowIndex})`, true, true)); // Column E            
 
             // Insert DARKSIDE players
             darkSidePlayers.forEach((player, index) => {
                 const rowIndex = startRow + index + 1; // Row index for DARKSIDE
                 insertRequests.push(createUpdateRequest(rowIndex, 6, player.playerName)); // Column G: Player name
-                insertRequests.push(createUpdateRequest(rowIndex, 7, player.atkRating)); // Column H: Attack rating
-                insertRequests.push(createUpdateRequest(rowIndex, 8, player.defRating)); // Column I: Defence rating
+                insertRequests.push(createUpdateRequest(rowIndex, 7, parseFloat(player.atkRating))); // Column H: Attack rating
+                insertRequests.push(createUpdateRequest(rowIndex, 8, parseFloat(player.defRating))); // Column I: Defence rating
 
                 const totalRating = parseFloat(player.atkRating || 0) + parseFloat(player.defRating || 0);
                 insertRequests.push(createUpdateRequest(rowIndex, 9, totalRating)); // Column J: Total rating
+
+                // Insert the emoji for attack or defence rating comparison in Column F
+                if (parseFloat(player.defRating) > parseFloat(player.atkRating)) {
+                    insertRequests.push(createEmojiUpdateRequest(rowIndex, 5, "🛡️")); // Column F: Defence rating emoji
+                } else if (parseFloat(player.atkRating) > parseFloat(player.defRating)) {
+                    insertRequests.push(createEmojiUpdateRequest(rowIndex, 5, "🗡️")); // Column F: Attack rating emoji
+                } else {
+                    insertRequests.push(createEmojiUpdateRequest(rowIndex, 5, "")); // Column F: No emoji if equal
+                }
             });
 
             // Insert DARKSIDE total row
             const darkTotalRowIndex = startRow + darkSidePlayers.length + 1;
             insertRequests.push(createUpdateRequest(darkTotalRowIndex, 6, "TOTAL", true)); // Column G
-            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 7, calculateTotal(darkSidePlayers, "atkRating"), true)); // Column H
-            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 8, calculateTotal(darkSidePlayers, "defRating"), true)); // Column I
-            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 9, calculateTotal(darkSidePlayers, "atkRating") + calculateTotal(darkSidePlayers, "defRating"), true)); // Column J
+            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 7, `=SUM(H${startRow + 2}:H${darkTotalRowIndex})`, true, true)); // Column H
+            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 8, `=SUM(I${startRow + 2}:I${darkTotalRowIndex})`, true, true)); // Column I
+            insertRequests.push(createUpdateRequest(darkTotalRowIndex, 9, `=SUM(J${startRow + 2}:J${darkTotalRowIndex})`, true, true)); // Column J            
 
             // Send the batch update request
             fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
@@ -1177,6 +1225,8 @@ function insertPlayersIntoSheet(accessToken, spreadsheetId, sheetName, fixtureDe
                     break;
                 }
             }
+
+            console.log(lastTotalRow,"yo")
   
             if (lastTotalRow !== -1) {
                 console.log(`The last row with "TOTAL" in column B is row: ${lastTotalRow}`);
